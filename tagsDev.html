@@ -1,0 +1,190 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Cloud Tagging Strategy — Tags Catalogue</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --gc-text: #1a1a1a;
+      --gc-muted: #6a6a6a;
+      --gc-border: #dcdcdc;
+      --gc-head-bg: #f5f5f5;
+      --gc-gap: 1rem;
+    }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+           line-height: 1.5; color: var(--gc-text); margin: 0; }
+    header, main { max-width: 1200px; margin: 0 auto; padding: 1rem; }
+    header h1 { margin: 0 0 .25rem 0; } header p { margin: 0; color: var(--gc-muted); }
+    .controls { margin: 1rem 0 2rem; display: grid; gap: .5rem; }
+    .tables { display: grid; gap: var(--gc-gap); }
+    section.table-block { border: 1px solid var(--gc-border); border-radius: 6px; overflow: hidden; background: #fff; }
+    section.table-block h2 { margin: 0; padding: .75rem 1rem; background: var(--gc-head-bg);
+                             font-size: 1.1rem; border-bottom: 1px solid var(--gc-border); }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: .65rem .75rem; vertical-align: top; border-top: 1px solid var(--gc-border); }
+    th { text-align: left; background: #fff; font-weight: 600; }
+    thead th { background: #fafafa; border-top: none; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: .95em; }
+    .nowrap { white-space: nowrap; } .muted { color: var(--gc-muted); }
+    .badge { display: inline-block; padding: .1rem .45rem; border-radius: .5rem; border: 1px solid var(--gc-border);
+             background: #f9f9f9; font-size: .85em; }
+    details summary { cursor: pointer; }
+    .sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    @media (max-width: 720px) { header, main { padding: .75rem; } th, td { padding: .55rem .6rem; } }
+    .row { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+  </style>
+
+  <!-- js-yaml to parse YAML in the browser -->
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Cloud Tagging Strategy</h1>
+    <p class="muted">Tags catalogue rendered from <abbr title="YAML Ain't Markup Language">YAML</abbr> (auto-loaded from <code>tags.yaml</code>)</p>
+  </header>
+
+  <main id="main-content">
+    <div class="controls" aria-labelledby="yaml-input-label">
+      <div class="row">
+        <button id="reloadBtn" type="button">Reload from <code>tags.yaml</code></button>
+        <span class="muted">If loading fails or you want to tweak locally, use the editor below:</span>
+      </div>
+      <label id="yaml-input-label" for="yamlInput"><strong>YAML editor (fallback)</strong></label>
+      <textarea id="yamlInput" rows="12" spellcheck="false" style="width:100%;"></textarea>
+      <div class="row">
+        <button id="renderBtn" type="button">Render tables</button>
+        <label for="yamlFile" class="badge" style="cursor:pointer;">Upload YAML file</label>
+        <input id="yamlFile" type="file" accept=".yml,.yaml" style="display:none;" />
+        <span id="status" class="muted" aria-live="polite"></span>
+      </div>
+    </div>
+
+    <div id="output" class="tables" aria-live="polite"></div>
+  </main>
+
+  <script>
+    const out = document.getElementById('output');
+    const renderBtn = document.getElementById('renderBtn');
+    const reloadBtn = document.getElementById('reloadBtn');
+    const yamlInput = document.getElementById('yamlInput');
+    const yamlFile = document.getElementById('yamlFile');
+    const statusEl = document.getElementById('status');
+
+    function setStatus(msg, isError=false) {
+      statusEl.textContent = msg || '';
+      statusEl.style.color = isError ? '#b00020' : 'inherit';
+    }
+
+    function normalizeStatus(s) {
+      if (!s) return 'underconsideration';
+      const v = String(s).trim().toLowerCase().replace(/\s+/g, '');
+      if (['mandatory','recommended','underconsideration'].includes(v)) return v;
+      return 'underconsideration';
+    }
+
+    function escapeHTML(s) {
+      return String(s ?? '')
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+    }
+
+    function renderTable(title, rows) {
+      return `
+      <section class="table-block" role="region" aria-label="${escapeHTML(title)}">
+        <h2>${escapeHTML(title)}</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Key</th>
+                <th scope="col">Description</th>
+                <th scope="col">Rationale</th>
+                <th scope="col">Source</th>
+                <th scope="col">Format</th>
+                <th scope="col">Sample</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map(r => {
+                const sample = r.sample ? `<code>${escapeHTML(r.sample.key)}=${escapeHTML(r.sample.value)}</code>` : '';
+                return `
+                  <tr>
+                    <th scope="row" class="nowrap"><code>${escapeHTML(r.key)}</code></th>
+                    <td>${escapeHTML(r.description || '')}</td>
+                    <td>${escapeHTML(r.rationale || '')}</td>
+                    <td>${escapeHTML(r.source_hierarchy_target || '')}</td>
+                    <td><span class="badge">${escapeHTML(r.format || '')}</span></td>
+                    <td>${sample}</td>
+                  </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </section>`;
+    }
+
+    function buildUI(doc) {
+      const tags = (doc && Array.isArray(doc.tags)) ? doc.tags : [];
+      const groups = { mandatory: [], recommended: [], underconsideration: [] };
+      tags.forEach(t => groups[normalizeStatus(t.status)].push(t));
+
+      const blocks = [];
+      if (groups.mandatory.length) blocks.push(renderTable('Mandatory', groups.mandatory));
+      if (groups.recommended.length) blocks.push(renderTable('Recommended', groups.recommended));
+      if (groups.underconsideration.length) blocks.push(renderTable('Under consideration', groups.underconsideration));
+
+      out.innerHTML = blocks.length ? blocks.join('\n') :
+        '<p class="muted">No tags detected. Paste YAML or reload from <code>tags.yaml</code>.</p>';
+    }
+
+    function parseAndRender(text) {
+      try {
+        const doc = jsyaml.load(text);
+        buildUI(doc);
+        setStatus('');
+      } catch (e) {
+        out.innerHTML = '<p role="alert" style="color:#b00020;"><strong>YAML parse error:</strong> ' + escapeHTML(e.message) + '</p>';
+        setStatus('YAML parse error', true);
+      }
+    }
+
+    async function loadFromFile(url = 'tags.yaml') {
+      try {
+        setStatus('Loading tags.yaml…');
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+        yamlInput.value = text;            // keep editor in sync
+        parseAndRender(text);
+        setStatus('Loaded from tags.yaml');
+      } catch (err) {
+        setStatus(`Could not load tags.yaml (${err.message}). You can paste or upload instead.`, true);
+      }
+    }
+
+    // Bind UI actions
+    renderBtn.addEventListener('click', () => parseAndRender(yamlInput.value));
+    reloadBtn.addEventListener('click', () => loadFromFile());
+    yamlFile.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      file.text().then(text => {
+        yamlInput.value = text;
+        parseAndRender(text);
+        setStatus(`Loaded ${file.name}`);
+      });
+    });
+
+    // Auto-load on first visit
+    loadFromFile(); // If this fails (e.g., using file://), user can paste/upload.
+  </script>
+
+  <!-- Notes:
+       - This static page fetches ./tags.yaml over HTTP(S) at runtime.
+       - If you open the file directly via file://, the browser will block fetch();
+         run a tiny local server instead (see below).
+  -->
+</body>
+</html>

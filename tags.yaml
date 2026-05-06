@@ -1,0 +1,150 @@
+tags:
+  - key: envr
+    status: mandatory
+    description: Which SLDC environment the workload runs in
+    rationale: Enables policy scoping and cost allocation
+    source_hierarchy_target: Environment
+    format: string(lowercase)
+    sample:
+      key: envr
+      value: prod
+
+  - key: classification
+    status: mandatory
+    description: Confidentiality of data. E.g. Unclassified, Protected A, or Protected B
+    rationale: Supports compliance and handling requirements
+    source_hierarchy_target: application/workload
+    format: Enum(pbmm, unclass)
+    sample:
+      key: classification
+      value: pbmm
+
+  - key: ssc_cbrid
+    status: mandatory 
+    description: Mandatory SSC Broker tag
+    rationale: Associate resource with a cloud business request (enable broker functions including chargeback and cost allocation)
+    source_hierarchy_target: resource
+    format: string (numeric or alphanumeric)
+    sample:
+      key: ssc_cbrid
+      value: 12345
+
+  - key: apm_id
+    status: mandatory
+    description: Application Portfolio Management identifier
+    rationale: Traceability, and associating assets with key business information
+    source_hierarchy_target: resource
+    format: string (numberic or alphanumeric)
+    sample:
+      key: apm_id
+      value: 12345
+
+  - key: dept_id
+    status: recommended
+    description: Three-digit department ID which is used to identify the resource owner. 000 is used for internal/core functions
+    rationale: Identify client associated with application in multi-tenant or aggregated reporting
+    source_hierarchy_target: application/workload
+    format: numeric (3 digits)
+    sample:
+      key: dept_id
+      value: 123
+
+  - key: workload_name
+    status: recommended
+    description:  Business/friendly name of the workload the resource supports.
+    rationale: Help quickly identify the applicaiton associated with a resource without APM identifier/lookup
+    source_hierarchy_target: application/workload
+    format: String (PascalCase or camelCase)
+    sample:
+      key: workload_name
+      value: testApp 
+
+  - key: audience
+    status: recommended
+    description:  This tag identifies the intended audience for the application. While APM validates these values, it is useful to directly tie this to assets.
+    rationale: Help quickly identify who the workload is used by/serves
+    source_hierarchy_target: application/workload
+    format: Enum(public, business, gc, other_gov)
+    sample:
+      key: audience
+      value: gc
+  
+  - key: sla
+    status: recommended
+    description: Service Level Agreement
+    rationale: Encodes availability and support expectations
+    source_hierarchy_target: application/workload
+    format: Enum(standard, cbas)
+    sample:
+      key: sla
+      value: cbas 
+  
+  - key: bu_plcy
+    status: recommended
+    description: Indicates the backup policy the resource should be enrolled in
+    rationale: Technical metadata for Operations Management
+    source_hierarchy_target: resource
+    format: Enum (standard, enhanced, none )
+    sample:
+      key: bu_plcy
+      value: standard
+
+  - key: pwr_plcy
+    status: recommended
+    description: Indicates the auto-shutdown policy the resource should be enrolled in
+    rationale: Technical metadata for Operations Management
+    source_hierarchy_target: resource
+    format: String (PascalCase or camelCase)
+    sample:
+      key: pwr_plcy
+      value: nonProdStandard
+
+  - key: tier 
+    status: consider 
+    description: Service Tier the resource if deployed to
+    rationale: Identify the role of the resource
+    source_hierarchy_target: resource
+    format: Enum (FrontEnd, BackEnd, Data)
+    sample:
+      key: tier
+      value: BackEnd
+
+  - key: owner
+    status: consider 
+    description: A CRM lookup or APM lookup or contact name of the business owner
+    rationale: Identify the business contact for the application
+    source_hierarchy_target: application/workload
+    format: string
+    sample:
+      key: owner
+      value: jane.doe@dept.gc.ca
+
+  - key: contact
+    status: consider 
+    description: A CRM lookup or APM lookup or contact name of the technical owner
+    rationale: Identify the technical contact for the application
+    source_hierarchy_target: application/workload
+    format: string
+    sample:
+      key: contact 
+      value: jane.doe@dept.gc.ca
+
+  - key: os
+    status: consider 
+    description: The OS family for deployed virtual machines 
+    rationale: Technical metadata for Operations Management 
+    source_hierarchy_target: resource (VM)
+    format: Enum (windows, linux, other)
+    sample:
+      key: os 
+      value: windows 
+
+  - key: crt_dt
+    status: consider 
+    description: Creation date of the resource.  
+    rationale: Technical metadata for Operations Management 
+    source_hierarchy_target: resource
+    format: string (RFC 3339 format) 
+    sample:
+      key: crt_dt 
+      value: YYYY-MM-DDTHH:MM:SSZ 
