@@ -34,7 +34,7 @@ tags:
     description: Application Portfolio Management identifier
     rationale: Traceability, and associating assets with key business information
     source_hierarchy_target: resource
-    format: string (numberic or alphanumeric)
+    format: string (numeric or alphanumeric)
     sample:
       key: apm_id
       value: 12345
@@ -52,7 +52,7 @@ tags:
   - key: workload_name
     status: recommended
     description:  Business/friendly name of the workload the resource supports.
-    rationale: Help quickly identify the applicaiton associated with a resource without APM identifier/lookup
+    rationale: Help quickly identify the application associated with a resource without APM identifier/lookup
     source_hierarchy_target: application/workload
     format: String (PascalCase or camelCase)
     sample:
@@ -74,7 +74,7 @@ tags:
     description: Service Level Agreement
     rationale: Encodes availability and support expectations
     source_hierarchy_target: application/workload
-    format: Enum(standard, cbas)
+    format: Enum(none, standard, cbas)
     sample:
       key: sla
       value: cbas 
@@ -102,7 +102,7 @@ tags:
   - key: tier 
     status: consider 
     description: Service Tier the resource if deployed to
-    rationale: Identify the role of the resource
+    rationale: Identify the role of the resource. Useful?
     source_hierarchy_target: resource
     format: Enum (FrontEnd, BackEnd, Data)
     sample:
@@ -112,7 +112,7 @@ tags:
   - key: owner
     status: consider 
     description: A CRM lookup or APM lookup or contact name of the business owner
-    rationale: Identify the business contact for the application
+    rationale: Identify the business contact for the application.  In "consider" as could be PII / Protected data.
     source_hierarchy_target: application/workload
     format: string
     sample:
@@ -122,7 +122,7 @@ tags:
   - key: contact
     status: consider 
     description: A CRM lookup or APM lookup or contact name of the technical owner
-    rationale: Identify the technical contact for the application
+    rationale: Identify the technical contact for the application. In "consider" as could be PII / Protected data.
     source_hierarchy_target: application/workload
     format: string
     sample:
@@ -132,7 +132,7 @@ tags:
   - key: os
     status: consider 
     description: The OS family for deployed virtual machines 
-    rationale: Technical metadata for Operations Management 
+    rationale: Technical metadata for Operations Management. Useful or discoverable by other means? 
     source_hierarchy_target: resource (VM)
     format: Enum (windows, linux, other)
     sample:
@@ -142,7 +142,7 @@ tags:
   - key: crt_dt
     status: consider 
     description: Creation date of the resource.  
-    rationale: Technical metadata for Operations Management 
+    rationale: Technical metadata for Operations Management. Useful?
     source_hierarchy_target: resource
     format: string (RFC 3339 format) 
     sample:
